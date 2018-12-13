@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Getting started with data scructures</title>
+
+		<meta name="description" content="Getting started with data scructures">
+		<meta name="author" content="Ruslan Sakevych">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>DATA STRUCTURES</h1>
+					<h3>QUICK START</h3>
+
+					<p>
+						<small>Created by <a href="http://lionell.github.io">Ruslan Sakevych</a> / <a href="http://twitter.com/xlionell">@lionell</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h2>Segment tree</h2>
+
+					<table>
+						<thead>
+							<tr>
+								<th>operation</th>
+								<th>time</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>build</td>
+								<td>N</td>
+							</tr>
+							<tr>
+								<td>get</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>range update</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>sum, min/max, gcd/lcm, ...</td>
+								<td>log(N)</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
+				<section>
+
+					<section data-markdown>
+                        ## API
+
+                        ```
+                        int a[] = {1, 2, 3, 4, 5, 6};
+
+                        build();
+
+                        sum(1, 4); // 2 + 3 + 4 + 5 = 16
+                        sum(4, 5); // 5 + 6 = 11
+
+                        update(2, 10); // a[2] = 10
+
+                        sum(2, 3); // 2 + 10 = 12
+                        ```
+					</section>
+
+					<section data-markdown>
+                        # ALERT!!!
+
+                        ```
+                        int t[4 * MAX_N]; // MEMORY LIMIT
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## BUILD
+
+                        ```
+                        void build(int v = 1, int tl = 0,
+                                    int tr = n - 1) {
+                            if (tl == tr) {
+                                t[v] = a[tl];
+                            } else {
+                                int tm = (tl + tr) / 2;
+                                build(2 * v, tl, tm);
+                                build(2 * v + 1, tm + 1, tr);
+                                t[v] = t[2 * v] + t[2 * v + 1];
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## SUM
+
+                        ```
+                        int sum(int l, int r, int v = 1,
+                                int tl = 0, int tr = n - 1) {
+                            if (l > r) {
+                                return 0;
+                            }
+                            if (tl == l && tr == r) {
+                                return t[v];
+                            }
+                            int tm = (tl + tr) / 2;
+                            return sum(l, min(r, tm), 2 * v, tl, tm)
+                                   + sum(max(tm + 1, l), r, a, 2 * v + 1, tm + 1, tr);
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## UPDATE v1
+
+                        ```
+                        void update(int i, int val, int v = 1,
+                                    int tl = 0, int tr = n - 1) {
+                            if (tl == tr) {
+                                t[v] = val;
+                            } else {
+                                int tm = (tl + tr) / 2;
+                                if (i <= tm) {
+                                    update(i, val, 2 * v, tl, tm);
+                                } else {
+                                    update(i, val, 2 * v + 1, tm + 1, tr);
+                                }
+                                t[v] = t[2 * v] + t[2 * v + 1];
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## TYPE OVERFLOW
+
+                        ```
+                        ...
+                        int tm = tl + (tr - tl) / 2;
+                        // instead of
+                        int tm = (tl + tr) / 2;
+                        ...
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## BITWISE OPERATIONS
+
+                        ```
+                        x >> 1 // instead of x / 2
+                        x << 1 // instead of x * 2
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ## TAIL-CALL
+
+                        Recursive call of update is tail-call.
+
+                        So we can easily convert it to loop.
+					</section>
+
+				</section>
+
+				<section>
+					<h2>MOVING FORWARD</h2>
+
+					<section>
+						<p>Now, we need some universal method for queries. </p>
+						<p class="fragment">Let's define some function that can combine useful information from child nodes.</p>
+					</section>
+
+					<section data-markdown>
+                        ```
+                        T t[MAX_N];
+
+                        T combine(T l, T r) {
+                            ...
+                        }
+
+                        T make(...) {
+                            ...
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void build(...) {
+                                if (tl == tr) {
+                                    // t[v] = a[tl];
+                                    t[v] = make(a[tl]);
+                                } else {
+                                    int tm = tl + (tr - tl) / 2;
+                                    build(2 * v, tl, tm);
+                                    build(2 * v + 1, tm + 1, tr);
+                                    // t[v] = t[2 * v] + t[2 * v + 1];
+                                    t[v] = combine(t[2 * v], t[2 * v + 1]);
+                                }
+                            }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                            void update(int i, T val, ...) {
+                                if (tl == tr) {
+                                    // t[v] = val;
+                                    t[v] = make(val);
+                                } else {
+                                    int tm = tl + (tr - tl) / 2;
+                                    if (i <= tm) {
+                                        update(i, val, 2 * v, tl, tm);
+                                    } else {
+                                        update(i, val, 2 * v + 1, tm + 1, tr);
+                                    }
+                                    // t[v] = t[2 * v] + t[2 * v + 1];
+                                    t[v] = combine(t[2 * v], t[2 * v + 1]);
+                                }
+                            }
+                        ```
+					</section>
+				</section>
+
+				<section data-markdown>
+                    ## ANOTHER RANGE QUERIES
+
+                    * min/max
+                    * min/max + **times**
+                    * gcd/lcm
+                    * zero-count & k-th zero
+                    * prefix with sum
+				</section>
+
+				<section data-markdown>
+                    ## SEE ALSO
+
+                    * [Dima and array (easy, #2941 @e-olymp)](http://www.e-olymp.com/en/problems/2941)
+                    * [Range Variation Query (medium, #695 @e-olymp)](http://www.e-olymp.com/en/problems/695)
+                    * [Segment tree contest (#6532 @e-olymp)](http://www.e-olymp.com/ru/contests/6532)
+				</section>
+
+				<section>
+					<h2>GET & RANGE INCREMENT</h2>
+
+					<section data-markdown>
+						API example
+						```
+						int a[] = {0, 0, 0, 0, 0};
+
+						inc(1, 3, 1); // a = {0, 1, 1, 1, 0}
+						inc(0, 2, -2); // a = {-2, -1, -1, 1, 0}
+
+						get(1); // a[1] == -1
+
+						```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void inc(int l, int r, int x, ...) {
+                            if (l > r) {
+                                return;
+                            }
+                            if (tl == l && tr == r) {
+                                t[v] += x;
+                            } else {
+
+                                int tm = tl + (tr - tl) / 2;
+                                inc(l, min(r, tm), x, 2 * v, tl, tm);
+                                inc(max(tm + 1, l), x, r, 2 * v + 1, tm + 1, tr);
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        int get(int i, ...) {
+                            if (tl == tr) {
+                                return a[i];
+                            }
+                            int tm = tl + (tr - tl) / 2;
+                            if (i <= tm) {
+                                return t[v] + get(i, 2 * v, tl, tm);
+                            }
+                            return t[v] + get(i, 2 * v + 1, tm + 1, tr);
+                        }
+                        ```
+					</section>
+				</section>
+
+				<section>
+					<h2>GET & RANGE ASSIGNMENT</h2>
+
+					<section data-markdown>
+                        API example
+
+                        ```
+                        int a[] = {0, 0, 0, 0, 0};
+
+                        let(3, 4, 1); // a = {0, 0, 0, 1, 1}
+                        let(2, 3, 7); // a = {0, 0, 7, 7, 1}
+
+                        get(3); // a[1] == 7
+
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void push(int v) {
+                            if (t[v] == -1) {
+                                return;
+                            }
+                            t[v * 2] = t[2 * v + 1] = t[v];
+                            t[v] = -1;
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void let(int l, int r, int x, ...) {
+                            if (l > r) {
+                                return;
+                            }
+                            if (tl == l && tr == r) {
+                                t[v] = x;
+                            } else {
+                                push(v);
+                                int tm = tl + (tr - tl) / 2;
+                                let(l, min(r, tm), x, 2 * v, tl, tm);
+                                let(max(l, tm + 1), x, r, 2 * v + 1, tm + 1, tr);
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        int get(int i, ...) {
+                            if (tl == tr) {
+                                return t[v];
+                            }
+                            push(v);
+                            int tm = tl + (tr - tl) / 2;
+                            if (i <= tm) {
+                                return get(i, 2 * v, tl, tm);
+                            }
+                            return get(i, 2 * v + 1, tm + 1, tr);
+                        }
+                        ```
+					</section>
+				</section>
+
+				<section>
+					<h2>SUM & RANGE ASSIGNMENT</h2>
+
+					<section data-markdown>
+                        API example
+
+                        ```
+                        int a[] = {1, 2, 0, 4, 0};
+
+                        build();
+
+                        let(3, 4, 1); // a = {1, 2, 0, 1, 1}
+                        let(2, 3, 7); // a = {1, 2, 7, 7, 1}
+
+                        sum(1, 3); // 2 + 7 + 7 = 16
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        pii get(int v, int tl, int tr) {
+                            return t[v].second == INF
+                                   ? t[v].first
+                                   : t[v].second * (tr - tl + 1);
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void push(int v) {
+                            if (t[v].second == INF) {
+                                return;
+                            }
+                            t[2 * v].second = t[2 * v + 1].second = t[v].second;
+                            t[v].second = INF;
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void let(int l, int r, int x, ...) {
+                            if (l > r) {
+                                return;
+                            }
+                            if (tl == l && tr == r) {
+                                t[v].second = x;
+                            } else {
+                                push(v);
+                                int tm = tl + (tr - tl) / 2;
+                                let(l, min(r, tm), x, 2 * v, tl, tm);
+                                let(max(l, tm + 1), r, x, 2 * v + 1, tm + 1, tr);
+                                t[v] = {get(2 * v, tl, tm)
+                                        + get(2 * v + 1, tm + 1, tr), INF};
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        int sum(int l, int r, ...) {
+                            if (l > r) {
+                                return 0;
+                            }
+                            if (tl == l && tr == r) {
+                                return get(v, tl, tr);
+                            }
+                            push(v);
+                            int tm = tl + (tr - tl) / 2;
+                            return sum(l, min(r, tm), 2 * v, tl, tm)
+                                   + sum(max(l, tm + 1), r, 2 * v + 1, tm + 1, tr);
+                        }
+                        ```
+					</section>
+
+				</section>
+
+				<section data-markdown>
+                    ## SEE ALSO
+
+                    * [e-maxx/segment_tree](http://e-maxx.ru/algo/segment_tree)
+                    * [Everything About Segment Trees @Codeforces](http://codeforces.com/blog/entry/15890)
+				</section>
+
+				<section>
+					<iframe src="http://visualgo.net/segmenttree.html" height="700px" width="100%"></iframe>
+				</section>
+
+				<section>
+					<h2>Cartesian tree/Treap</h2>
+
+					<table>
+						<thead>
+							<tr>
+								<th>operation</th>
+								<th>time</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>build</td>
+								<td>N</td>
+							</tr>
+							<tr>
+								<td>split/merge</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>k-th element</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>insert/remove</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>reverse</td>
+								<td>log(N)</td>
+							</tr>
+							<tr>
+								<td>sum, min/max, ...</td>
+								<td>log(N)</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
+				<section>
+					<h2>SIMPLE OPERATIONS</h2>
+
+					<section data-markdown>
+                        API example
+
+                        ```
+                        t->insert(1); // t = {4}
+                        ...
+                        t->insert(6); // t = {1, 2, 3, 4, 5, 6}
+
+                        t->remove(3); // t = {1, 2, 4, 5, 6}
+
+                        t->split(2, l, r); // l = {1}, r = {2, 4, 5, 6}
+
+                        r->sum(); // 2 + 4 + 5 + 6 = 17
+
+                        t = merge(l, r); // t = {1, 2, 4, 5, 6}
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        struct Treap {
+                            int x;
+                            int y;
+                            Treap *left;
+                            Treap *right;
+
+                            Treap(int x, int y, Treap *left, Treap *right);
+
+                            static Treap *merge(Treap *l, Treap* r);
+                            void split(int key, Treap *l, Treap *r);
+                            Treap *insert(int x);
+                            Treap *remove(int x);
+                        };
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        static Treap *merge(Treap *l, Treap *r) {
+                            if (l == nullptr) {
+                                return r;
+                            }
+                            if (r == nullptr) {
+                                return l;
+                            }
+                            if (l->y > r->y) {
+                                Treap *newRight = merge(l->right, r);
+                                return new Treap(l->x, l->y, l->left, newRight);
+                            } else {
+                                Treap *newLeft = merge(l, r->left);
+                                return new Treap(r->x, r->y, newLeft, r->right);
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        void split(int key, Treap *l, Treap *r) {
+                            Treap *newTree = nullptr;
+                            if (x <= key) {
+                                if (right == nullptr)
+                                    r = nullptr;
+                                else
+                                    right->split(key, newTree, r);
+                                l = new Treap(x, y, left, newTree);
+                            } else {
+                                if (left == nullptr)
+                                    l = nullptr;
+                                else
+                                    left->split(key, l, newTree);
+                                r = new Treap(x, y, newTree, right);
+                            }
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        Treap *insert(int x) {
+                            Treap *l, *r;
+                            split(x, l, r);
+                            Treap *m = new Treap(x, rand());
+                            return merge(merge(l, m), r);
+                        }
+                        ```
+					</section>
+
+					<section data-markdown>
+                        ```
+                        Treap *remove(int x) {
+                            Treap *l, *m, *r, *t;
+                            split(x, m, r);
+                            m->split(x - 1, l, t);
+                            return merge(l, r);
+                        }
+                        ```
+					</section>
+
+				</section>
+
+				<section>
+					<h1>Questions?</h1>
+					<!--
+					<p>
+						- <a href="http://slides.com">Try the online editor</a> <br>
+						- <a href="https://github.com/hakimel/reveal.js">Source code &amp; documentation</a>
+					</p>
+					-->
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
